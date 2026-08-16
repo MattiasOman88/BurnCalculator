@@ -55,19 +55,19 @@
   main{max-width:960px;margin:0 auto;padding:12px 12px 100px;}
 
   .toolbar{
-    position:sticky;top:0;z-index:20;background:var(--card);
-    border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:14px;
-    display:flex;flex-direction:column;gap:8px;
+    background:var(--card);
+    border:1px solid var(--line);border-radius:12px;padding:9px;margin-bottom:14px;
+    display:flex;flex-direction:column;gap:6px;
     box-shadow:0 2px 6px rgba(0,0,0,.06);
   }
-  .toolbar-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
-  .toolbar .group{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+  .toolbar-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+  .toolbar .group{display:flex;gap:5px;align-items:center;flex-wrap:wrap;}
   .toolbar .label{font-size:.72rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.03em;margin-right:2px;}
   button{
     font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--text);
-    border-radius:9px;padding:9px 12px;font-size:.85rem;font-weight:600;
+    border-radius:8px;padding:6px 9px;font-size:.78rem;font-weight:600;
     transition:background .12s,color .12s,border-color .12s;
-    min-height:40px;
+    min-height:32px;
   }
   button:active{transform:translateY(1px);}
   button.active{background:var(--blue);border-color:var(--blue);color:#fff;}
@@ -77,9 +77,9 @@
   .pen-dot{display:inline-block;border-radius:50%;background:currentColor;vertical-align:middle;margin-right:6px;}
   .spacer{flex:1 1 auto;}
 
-  .stepper{display:flex;align-items:center;gap:0;border:1px solid var(--line);border-radius:9px;overflow:hidden;}
-  .stepper button{border:none;border-radius:0;min-width:38px;padding:9px 10px;}
-  .stepper .count{padding:0 12px;font-weight:700;min-width:26px;text-align:center;}
+  .stepper{display:flex;align-items:center;gap:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;}
+  .stepper button{border:none;border-radius:0;min-width:32px;padding:6px 8px;}
+  .stepper .count{padding:0 10px;font-weight:700;min-width:22px;text-align:center;font-size:.85rem;}
 
   .views{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
   .view-card{
@@ -93,11 +93,12 @@
   .marker-canvas{pointer-events:none;}
   .cursor-canvas{pointer-events:none;}
 
-  input[type="number"], input[type="time"]{
+  input[type="number"], input[type="time"], select{
     font:inherit;border:1px solid var(--line);background:var(--card);color:var(--text);
-    border-radius:9px;padding:9px 10px;font-size:.9rem;min-height:40px;width:96px;
+    border-radius:8px;padding:6px 8px;font-size:.82rem;min-height:32px;width:90px;
   }
-  input[type="time"]{width:120px;}
+  input[type="time"]{width:110px;}
+  select{width:auto;cursor:pointer;}
 
   .results{
     background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:16px;
@@ -157,17 +158,19 @@
       <div class="spacer"></div>
       <div class="group">
         <button id="clearBtn" class="danger">Rensa</button>
-        <button id="printBtn">Skriv ut</button>
       </div>
     </div>
     <div class="toolbar-row">
       <div class="group" id="causeGroup">
         <span class="label">Orsak</span>
-        <button class="cause-btn" data-cause="flame">Flamma</button>
-        <button class="cause-btn" data-cause="scald">Skållning</button>
-        <button class="cause-btn" data-cause="chemical">Frätande</button>
-        <button class="cause-btn" data-cause="electrical">El</button>
-        <button class="cause-btn" data-cause="other">Annan</button>
+        <select id="causeSelect">
+          <option value="">– Välj orsak –</option>
+          <option value="flame">Flamma</option>
+          <option value="scald">Skållning</option>
+          <option value="chemical">Frätande</option>
+          <option value="electrical">El</option>
+          <option value="other">Annan</option>
+        </select>
       </div>
     </div>
     <div class="toolbar-row" id="markerRow" style="display:none;">
@@ -761,19 +764,15 @@
   // ---------- Orsak (burn cause) ----------
   const CAUSE_LABELS = { flame:'Flamma', scald:'Skållning', chemical:'Frätande', electrical:'El', other:'Annan' };
   let currentCause = null;
-  const causeButtons = Array.from(document.querySelectorAll('.cause-btn'));
+  const causeSelect = document.getElementById('causeSelect');
   const markerRow = document.getElementById('markerRow');
-  causeButtons.forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const val = btn.dataset.cause;
-      currentCause = currentCause === val ? null : val;
-      causeButtons.forEach(b=>b.classList.toggle('active', b.dataset.cause === currentCause));
-      markerRow.style.display = currentCause === 'electrical' ? '' : 'none';
-      if(currentCause !== 'electrical' && (currentTool === 'markIn' || currentTool === 'markOut')){
-        setTool('pen');
-      }
-      document.getElementById('causeTag').textContent = currentCause ? 'Orsak: ' + CAUSE_LABELS[currentCause] : '';
-    });
+  causeSelect.addEventListener('change', ()=>{
+    currentCause = causeSelect.value || null;
+    markerRow.style.display = currentCause === 'electrical' ? '' : 'none';
+    if(currentCause !== 'electrical' && (currentTool === 'markIn' || currentTool === 'markOut')){
+      setTool('pen');
+    }
+    document.getElementById('causeTag').textContent = currentCause ? 'Orsak: ' + CAUSE_LABELS[currentCause] : '';
   });
 
   // ---------- Vätskebalans (Parklands formel) ----------
@@ -816,8 +815,6 @@
   }
   weightInput.addEventListener('input', recalcFluid);
   injuryTimeInput.addEventListener('input', recalcFluid);
-
-  document.getElementById('printBtn').addEventListener('click', ()=>window.print());
 
   document.getElementById('hfPlus').addEventListener('click', ()=>{
     handflator++;
